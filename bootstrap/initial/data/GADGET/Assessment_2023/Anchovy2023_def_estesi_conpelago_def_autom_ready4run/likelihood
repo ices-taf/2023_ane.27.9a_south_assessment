@@ -128,19 +128,6 @@ fittype	fixedslopeloglinearfit
 slope	1
 ; 
 [component]
-name	bocadeva.survey
-weight	1
-type	surveyindices
-datafile	Data/surveyindices.bocadeva.survey.lengths
-sitype	lengths
-biomass	1
-areaaggfile	Aggfiles/surveyindices.bocadeva.survey.area.agg
-lenaggfile	Aggfiles/surveyindices.bocadeva.survey.len.agg
-stocknames	anch
-fittype	fixedslopeloglinearfit
-slope	1
-; 
-[component]
 name	ldist.ecocadizrec.noage
 weight	1
 type	catchdistribution
