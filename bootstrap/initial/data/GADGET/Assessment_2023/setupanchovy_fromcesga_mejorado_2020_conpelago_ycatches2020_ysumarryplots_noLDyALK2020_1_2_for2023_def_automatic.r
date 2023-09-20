@@ -2287,7 +2287,7 @@ gadget_dir_write(gd, gadget_likelihood_component("catchdistribution",
 rm(aggdata)
 
 aggdata <- mfdb_sample_count(mdb, c('age','length'), c(list(
-  sampling_type='ecocadiz_rec_comp_ald',length = mfdb_interval("len", seq(3.5,19.5,0.5)), age=c(1,2,3)),
+  sampling_type='ecocadiz_rec_comp_ald',length = mfdb_interval("len", seq(3.5,19.5,0.5)), age=c(0,1,2,3)),
   defaults))
 gadget_dir_write(gd, gadget_likelihood_component("catchdistribution",
                                                 name = "aldist.ecocadizrec",
@@ -2633,7 +2633,7 @@ gadget_dir_write(gd, gadget_file("Aggfiles/surveyindices.pelagonumber.survey.len
 # rm(aggdata)
 ##################33este a?n no lo veo claro
 
-aggdata<-mfdb_sample_count(mdb, c('length'), c(list(sampling_type='ecocadiz_bio'),defaults))
+aggdata<-mfdb_sample_count(mdb, c('length'), c(list( sampling_type='ecocadiz_bio'),defaults))
 
 gadget_dir_write(gd, gadget_likelihood_component("surveyindices",
                                                  name = "ecocadiz.survey",
@@ -2646,7 +2646,7 @@ gadget_dir_write(gd, gadget_likelihood_component("surveyindices",
                                                  surveynames='ecocadiz'))
 
 rm(aggdata)
-gadget_dir_write(gd, gadget_file("Aggfiles/surveyindices.ecocadiz.survey.age.agg", list(list(all=c(0,3)))))
+gadget_dir_write(gd, gadget_file("Aggfiles/surveyindices.ecocadiz.survey.age.agg", list(list(all=c(1,3)))))
 gadget_dir_write(gd, gadget_file("Aggfiles/surveyindices.ecocadiz.survey.len.agg", list(list(all=c(3,22)))))
 
 ########################################################
