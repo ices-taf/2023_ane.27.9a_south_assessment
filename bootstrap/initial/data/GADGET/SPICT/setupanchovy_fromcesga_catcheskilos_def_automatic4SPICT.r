@@ -5,7 +5,8 @@
 #devtools::install_github("mareframe/mfdb", ref="3.x")
 #devtools::install_github('hafro/rgadget')
 #remotes::install_github('mareframe/mfdb', ref = 'd4bbd4e')
-
+#remotes::install_github('r-gregmisc/gdata', ref = '37dd77c')
+#installXLSXsupport()
 #Weight in kilos and numbers require to be multiplied by 1000 to be in units and not thousands
 
 #Catchdistribution de las surveys y las acústicas solo biomasa
@@ -46,7 +47,7 @@ colnames(temperature)<-c("id","year", "month","areacell","temperature")
 #weight_age=read.csv("/home/marga/GADGET/DATOS/catches_weight_at_age_kg88_13_3.csv",strip.white = TRUE, sep=",", na.strings= c("999", "NA", " ", ""),stringsAsFactors=FALSE)  
 #weight_age=read.csv("/home/marga/GADGET/DATOS/catches_weight_at_age_kg88_13_2.csv")
 #weight_age=read.xls("/home/marga/GADGET/DATOS/catches_weight_at_age_kg88_13_5.xls")
-Catches_Ptg<-read.xls("../DATOS/Algarve/ANE_1989_2016 WGPELA_ENVIO_CORRIGIDO.xls")
+Catches_Ptg<-gdata::read.xls("../DATOS/Algarve/ANE_1989_2016 WGPELA_ENVIO_CORRIGIDO.xls")
 require(dplyr)
 require(tidyr)
 Catches_Algarve<-Catches_Ptg %>% filter(AREATYPE=="27.9.a.s.a") %>%  group_by(YEAR,SEASON)%>% summarise(totalton=sum(CATON))%>% ungroup() %>% complete(YEAR, SEASON, fill = list(totalton = 0))
@@ -1235,12 +1236,12 @@ ecocadiz_biom$month<-ecocadiz_biom$month-3
 #   temperature = c(0.5, 1.2, 2.4, 3.5, 4.6, 5.7, 6.1, 7.4, 8.9, 10, 11, 12, 25:36)))
 
 
-mfdb_import_area(mdb_compi, data.frame(id = c(1), name=c("IXa"), size =c(13000))) #division=c('alg','cad'),
+#mfdb_import_area(mdb_compi, data.frame(id = c(1), name=c("IXa"), size =c(13000))) #division=c('alg','cad'),
 #mfdb_import_division(mdb_comp, list(divA = c("IXa", "IXa_a"), divB = c('IXa')))
 
 
 #temperature<-temperature[,-1]
-mfdb_import_temperature(mdb_compi, temperature)
+#mfdb_import_temperature(mdb_compi, temperature)
 
 FOO<-list()
 FOOG<-list()
@@ -1889,14 +1890,47 @@ ecocadiz_rec.ldist<-ecocadiz_rec_comp_ld
 
 
 
+seine.ldist
+save(seine.ldist, file="seine_ldist.Rdata")
+unique(seine.ldist$month)
+pelago.ldistnoage
+save(pelago.ldistnoage, file="pelago_ldist.Rdata")
+unique(pelago.ldistnoage$month)
+min(pelago.ldistnoage$year)
+seine_ldist_minbyquarter<-seine.ldist%>%#filter(year %in% unique(pelago.ldistnoage$year))%>%
+  filter(count!=0)%>%group_by(year,month)%>%mutate(min=min(length))
+#Pelago se hace en el primer trimestre hasta 2003 de ahí en adelante es segundo
+seine_ldist_minbyquarter_red<-distinct(seine_ldist_minbyquarter%>%select(year,month,min))#min length in catches by year and quarter
+pelago_ldist_minbyquarter<-pelago.ldistnoage%>%filter(count!=0)%>%group_by(year,month)%>%mutate(min=min(length))
+pelago_ldist_minbyquarter_red<-distinct(pelago_ldist_minbyquarter%>%select(year,month,min))
+seine_ldist_minbyquarter_red
+pelago_ldist_minbyquarter_red
+seinepelmin<-seine_ldist_minbyquarter_red%>%filter(year %in% unique(pelago.ldistnoage$year))%>%filter((year==1998 & month==3) | (year==2001 & month==3) | (year==2000 & month==3) | (year==2002 & month==3) | (year>2002 & year<2020 & month>3 & month<7)|(year>2019 & month<4)) #min length coincidiendo con los quarters de la pelago los reales, en el primero 1998-2002, en el segundo 2022-2019 y en el primero 2020-onwards.
+idencortepelago<-1*(seinepelmin$min<pelago_ldist_minbyquarter_red$min[1:20])
+year_corte<-data.frame(year=seinepelmin$year, seinemin=seinepelmin$min,pelagomin=pelago_ldist_minbyquarter_red$min[1:20])%>%mutate(maxi=pmax(seinemin,pelagomin))%>%select(year,maxi)
+realyearcorte<-left_join(pelago_ldist_minbyquarter_red,year_corte)%>%select(year,month,maxi)
+realyearcorte
+pelagoexploitable<-left_join(pelago.ldistnoage%>%filter(count!=0),realyearcorte)%>%group_by(year)%>%mutate(newcount=(length>=maxi)*count)
+pelagoexploitable%>%filter(year==2010)
+save(pelagoexploitable, file="pelago_ldist_exploitable.Rdata")
 
+ecocadiz.ldistnoage
+save(ecocadiz.ldistnoage,file="ecocadiz_ldist.Rdata")
+ecocadiz_ldist_minbyquarter<-ecocadiz.ldistnoage%>%filter(count!=0)%>%group_by(year,month)%>%mutate(min=min(length))
+ecocadiz_ldist_minbyquarter_red<-distinct(ecocadiz_ldist_minbyquarter%>%select(year,month,min))
+ecocadiz_ldist_minbyquarter_red
+seine_ldist_minbyquarter_red #minimum by quarter
+seineecomin<-seine_ldist_minbyquarter_red%>%filter(year %in% unique(ecocadiz.ldistnoage$year))%>%filter((year==2004 & month==6) | (year==2006 & month==6) | (year>2006 & month>6 & month<10))#2004 y 2006 en el segundo y todo lo demás en el tercero
+seineecomin$min<ecocadiz_ldist_minbyquarter_red$min
+year_corte<-data.frame(year=seineecomin$year, seinemin=seineecomin$min,ecocadizmin=ecocadiz_ldist_minbyquarter_red$min)%>%mutate(maxi=pmax(seinemin,ecocadizmin))%>%select(year,maxi)
+realyearcorte<-left_join(ecocadiz_ldist_minbyquarter_red,year_corte)%>%select(year,month,maxi)
+realyearcorte
+ecocadizexploitable<-left_join(ecocadiz.ldistnoage%>%filter(count!=0),realyearcorte)%>%group_by(year)%>%mutate(newcount=(length>=maxi)*count)
+ecocadizexploitable%>%filter(year==2010)
+save(ecocadizexploitable, file="ecocadiz_ldist_exploitable.Rdata")
 
-
-
-
-
-
-
+ecocadiz_rec.ldist
+save(ecocadiz_rec.ldist,file="ecocadizrec_ldist.Rdata")
 
 
 
